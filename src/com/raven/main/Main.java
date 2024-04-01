@@ -64,7 +64,7 @@ public class Main extends javax.swing.JFrame {
     public void setForm(JComponent com) {
         mainPanel.removeAll();
         mainPanel.add(com);
-        mainPanel.repaint();
+        mainPanel.repaint(); 
         mainPanel.revalidate();
     }
 
