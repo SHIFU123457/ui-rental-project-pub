@@ -5,6 +5,7 @@ import com.raven.model.Model_Card;
 import com.raven.model.StatusType;
 import com.raven.swing.ScrollBar;
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.sql.Statement;
@@ -34,6 +35,15 @@ public class Form_Home extends javax.swing.JPanel {
        
         card1.addMouseListener(new MouseAdapter(){
             @Override
+            public void mouseEntered(MouseEvent e) {
+                setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                setCursor(Cursor.getDefaultCursor());
+            }
+            @Override
             public void mouseClicked(MouseEvent e){
                 super.mouseClicked(e);
                 ProfitsForm profitsForm = new ProfitsForm();
@@ -44,6 +54,15 @@ public class Form_Home extends javax.swing.JPanel {
         });
         
         card2.addMouseListener(new MouseAdapter(){
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                setCursor(Cursor.getDefaultCursor());
+            }
             @Override
             public void mouseClicked(MouseEvent e){
                 super.mouseClicked(e);

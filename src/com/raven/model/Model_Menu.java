@@ -1,5 +1,6 @@
 package com.raven.model;
 
+import java.awt.Rectangle;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 

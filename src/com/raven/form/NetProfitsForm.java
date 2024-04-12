@@ -17,6 +17,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.YearMonth;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
@@ -34,7 +35,9 @@ import javax.swing.table.DefaultTableModel;
  * @author GUEST1
  */
 public class NetProfitsForm extends javax.swing.JPanel {
-
+    double thisMonthsNetProfit = calculateNetProfit(YearMonth.now());
+    double lastMonthsNetProfit = calculateNetProfit(YearMonth.now().minusMonths(1));
+    
     /**
      * Creates new form NetProfitsForm
      */
@@ -46,9 +49,8 @@ public class NetProfitsForm extends javax.swing.JPanel {
         smallCard2.setColor1(new Color(0,58,40));
         smallCard2.setColor2(new Color(1,138,96));
         
-        smallCard1.setData(new ModelSmallCard(new ImageIcon(getClass().getResource("/com/raven/icon/profit.png")), "Last Month's Net Profit", "$0000"));
-        smallCard2.setData(new ModelSmallCard(new ImageIcon(getClass().getResource("/com/raven/icon/profit.png")), "This Month's Net Profit", "$0000"));
-        
+        smallCard1.setData(new ModelSmallCard(new ImageIcon(getClass().getResource("/com/raven/icon/profit.png")), "Last Month's Net Profit", "$"+lastMonthsNetProfit+""));
+        smallCard2.setData(new ModelSmallCard(new ImageIcon(getClass().getResource("/com/raven/icon/profit.png")), "This Month's Net Profit", "$"+thisMonthsNetProfit+""));
         
         
         table1.setShowHorizontalLines(true);
@@ -101,25 +103,25 @@ public class NetProfitsForm extends javax.swing.JPanel {
             }
         });
         populateTableFromDatabase();
-        
-       String query = "SELECT month,\n" +
-               "    CASE \n" +
-               "        WHEN net_profit < 0 THEN 0 \n" +
-               "        ELSE net_profit \n" +
-               "    END AS net_profit\n" +
-               "FROM (\n" +
-               "    SELECT \n" +
-               "        DATE_FORMAT(p.timePaid, '%Y-%m') AS month, \n" +
-               "        SUM(p.amount) AS total_payment,\n" +
-               "        COALESCE(SUM(e.amount), 0) AS total_expenditure,\n" +
-               "        SUM(p.amount) - COALESCE(SUM(e.amount), 0) AS net_profit \n" +
-               "    FROM \n" +
-               "        payments p\n" +
-               "    LEFT JOIN \n" +
-               "        expenditures e ON DATE_FORMAT(p.timePaid, '%Y-%m') = DATE_FORMAT(e.timePaid, '%Y-%m')\n" +
-               "    GROUP BY \n" +
-               "        DATE_FORMAT(p.timePaid, '%Y-%m')\n" +
-               ") AS subquery;";
+
+        String query = "SELECT month,\n" +
+                "    CASE \n" +
+                "        WHEN net_profit < 0 THEN 0 \n" +
+                "        ELSE net_profit \n" +
+                "    END AS net_profit\n" +
+                "FROM (\n" +
+                "    SELECT \n" +
+                "        DATE_FORMAT(p.timePaid, '%Y-%m') AS month, \n" +
+                "        SUM(p.amount) AS total_payment,\n" +
+                "        COALESCE(SUM(e.amount), 0) AS total_expenditure,\n" +
+                "        SUM(p.amount) - COALESCE(SUM(e.amount), 0) AS net_profit \n" +
+                "    FROM \n" +
+                "        payments p\n" +
+                "    LEFT JOIN \n" +
+                "        expenditures e ON YEAR(p.timePaid) = YEAR(e.timePaid) AND MONTH(p.timePaid) = MONTH(e.timePaid)\n" +
+                "    GROUP BY \n" +
+                "        DATE_FORMAT(p.timePaid, '%Y-%m')\n" +
+                ") AS subquery;";
 
         lineGraph1.plotDataFromMySQL(query, "month", "net_profit");
         lineGraph1.setChartBackground(new Color(0,58,40));
@@ -196,6 +198,54 @@ public class NetProfitsForm extends javax.swing.JPanel {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+    
+    private static double calculateNetProfit(YearMonth yearMonth) {
+        double totalPayments = getTotalPayments(yearMonth);
+        double totalExpenditures = getTotalExpenditures(yearMonth);
+        return totalPayments - totalExpenditures;
+    }
+    
+    private static final String JDBC_URL = "jdbc:mysql://localhost:3306/rentalproject";
+    private static final String USERNAME = "root";
+    private static final String PASSWORD = "";
+    
+    private static double getTotalPayments(YearMonth yearMonth) {
+        double totalPayments = 0;
+        try (Connection conn = DriverManager.getConnection(JDBC_URL, USERNAME, PASSWORD)) {
+            String query = "SELECT SUM(amount) FROM payments WHERE MONTH(timePaid) = ? AND YEAR(timePaid) = ?";
+            try (PreparedStatement stmt = conn.prepareStatement(query)) {
+                stmt.setInt(1, yearMonth.getMonthValue());
+                stmt.setInt(2, yearMonth.getYear());
+                try (ResultSet rs = stmt.executeQuery()) {
+                    if (rs.next()) {
+                        totalPayments = rs.getDouble(1);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return totalPayments;
+    }
+    
+    private static double getTotalExpenditures(YearMonth yearMonth) {
+        double totalExpenditures = 0;
+        try (Connection conn = DriverManager.getConnection(JDBC_URL, USERNAME, PASSWORD)) {
+            String query = "SELECT SUM(amount) FROM expenditures WHERE MONTH(timePaid) = ? AND YEAR(timePaid) = ?";
+            try (PreparedStatement stmt = conn.prepareStatement(query)) {
+                stmt.setInt(1, yearMonth.getMonthValue());
+                stmt.setInt(2, yearMonth.getYear());
+                try (ResultSet rs = stmt.executeQuery()) {
+                    if (rs.next()) {
+                        totalExpenditures = rs.getDouble(1);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return totalExpenditures;
     }
 
     /**

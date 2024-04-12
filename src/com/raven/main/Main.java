@@ -8,18 +8,20 @@ package com.raven.main;
 import com.raven.event.EventMenuSelected;
 import com.raven.form.Form_1;
 import com.raven.form.Form_2;
-import com.raven.form.Form_3;
+import com.raven.form.TenantsForm;
 import com.raven.form.Form_4;
 import com.raven.form.Form_Home;
 import com.raven.form.ProfitsForm;
 import java.awt.Color;
 import javax.swing.JComponent;
 
-/**
- *
- * @author RAVEN
- */
-public class Main extends javax.swing.JFrame {
+//ADD:
+//1.security alert system
+//2. rent due alert system in sms form
+//3. type of rental: flats/estate/hostel
+//4. payment message report
+public class
+Main extends javax.swing.JFrame {
 
     /**
      * Creates new form Main
@@ -27,9 +29,8 @@ public class Main extends javax.swing.JFrame {
     private Form_Home home;
     private Form_1 form1;
     private Form_2 form2;
-    private Form_3 form3;
+    private TenantsForm form3;
     private Form_4 form4;
-    private ProfitsForm profitsForm;
 
     public Main() {
         initComponents();
@@ -37,9 +38,8 @@ public class Main extends javax.swing.JFrame {
         home = new Form_Home();
         form1 = new Form_1();
         form2 = new Form_2();
-        form3 = new Form_3();
+        form3 = new TenantsForm();
         form4 = new Form_4();
-        profitsForm = new ProfitsForm();
         menu.initMoving(Main.this);
         menu.addEventMenuSelected(new EventMenuSelected() {
             @Override
@@ -49,10 +49,20 @@ public class Main extends javax.swing.JFrame {
                 } else if (index == 1) {
                     setForm(form1);
                 } else if (index == 2) {
-                    setForm(form2);
-                } else if (index == 3) {
                     setForm(form3);
+                } else if (index == 3) {
+                    setForm(form2);
                 }else if (index == 4) {
+                    setForm(form4);
+                }else if (index == 8) {
+                    setForm(form4);
+                }else if (index == 9) {
+                    setForm(form1);
+                }else if (index == 10) {
+                    setForm(form2);
+                }else if (index == 11) {
+                    setForm(form2);
+                }else if (index == 12) {
                     setForm(form4);
                 }
             }
